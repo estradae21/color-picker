@@ -1,0 +1,29 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.ernestoestrada.colorpicker.MainActivity">
+
+    <item
+        android:id="@+id/save_color"
+        android:orderInCategory="100"
+        android:title="@string/save_color"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/recall_color"
+        android:orderInCategory="100"
+        android:title="@string/recall_color"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="101"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_help"
+        android:orderInCategory="101"
+        android:title="@string/action_help"
+        app:showAsAction="never" />
+</menu>
