@@ -20,17 +20,17 @@ import java.io.FileReader
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
     var namedColors = ""
     var colors:IntArray = intArrayOf(0,0,0)
+    var savedColor = arrayListOf(0,0,0,"")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
 
         var actionBar = getSupportActionBar()
         actionBar!!.setDisplayShowHomeEnabled(true)
@@ -60,10 +60,10 @@ class MainActivity : AppCompatActivity() {
         blueProgress.text = colors[2].toString()
     }
 
-    fun displayAlert(){
-        val alert = AlertDialog.Builder(this)
+    private fun showColorList(){
 
     }
+
     private fun saveColor(str: String) {
         val line = "red, green, blue, name \n"
         val f = File("dataStorage.txt", FILENAME)
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
             print(ex.message)}
             */
     }
+
     private fun pickColor(){
         val fin = File("dataStorage.txt", FILENAME)
         val sc = Scanner(fin)
@@ -113,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         catch (ex:Exception){
             print(ex.message)}
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -138,9 +140,8 @@ class MainActivity : AppCompatActivity() {
 
                 return true}
             R.id.recall_color ->{
-                displayAlert()
+                //displayAlert()
                 return true}
-
             else -> super.onOptionsItemSelected(item)
         }
     }
