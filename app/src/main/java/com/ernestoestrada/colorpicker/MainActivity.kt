@@ -1,32 +1,29 @@
 package com.ernestoestrada.colorpicker
 
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Telephony.Mms.Part.FILENAME
 import android.support.v7.app.AlertDialog
-import android.text.TextUtils.split
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.SeekBar
-import android.widget.Toast
-import com.ernestoestrada.colorpicker.R.color.*
-import com.ernestoestrada.colorpicker.R.id.*
+import android.widget.*
+import com.ernestoestrada.colorpicker.R.mipmap.ic_launcher
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.alert
+import org.jetbrains.anko.selector
+import org.jetbrains.anko.toast
 import java.io.File
-import java.io.FileReader
-import java.io.InputStream
-import java.nio.charset.Charset
+import java.io.OutputStreamWriter
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
-    var namedColors = ""
+    var namedColors  = arrayListOf<CharSequence>()
     var colors:IntArray = intArrayOf(0,0,0)
-    var savedColor = arrayListOf(0,0,0,"")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,73 +42,79 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupSeekBarListener(seekBar: SeekBar, idx:Int){
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
-        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-            colors[idx] = progress
-            updatetxt()
-            colorView.setBackgroundColor(Color.rgb(colors[0], colors[1], colors[2]))
-        }
-        override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-        override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-    })}
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                colors[idx] = progress
+                seekBarProgress()
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })}
 
-    private fun updatetxt(){
+    private fun seekBarProgress(){
         redProgress.text = colors[0].toString()
         greenProgress.text = colors[1].toString()
         blueProgress.text = colors[2].toString()
+        colorView.setBackgroundColor(Color.rgb(colors[0], colors[1], colors[2]))
     }
 
-    private fun showColorList(){
+    private fun saveAlertbox(){
+        val f = openFileOutput("dataStorage.txt", Context.MODE_APPEND)
+        val fOut =  OutputStreamWriter(f)
+        var colorName: EditText = EditText(this)
+        var str:String = colors[0].toString() + " " + colors[1].toString() + " " +
+                colors[2].toString()
+        val simpleAlert = AlertDialog.Builder(this@MainActivity).create()
+        simpleAlert.setTitle("Save Color")
+        simpleAlert.setMessage(str)
+        simpleAlert.setView(colorName)
 
-    }
-
-    private fun saveColor(str: String) {
-        val line = "red, green, blue, name \n"
-        val f = File("dataStorage.txt", FILENAME)
-        f.appendText(line)
-        /*
-        try {
-
-            var fos = openFileOutput("dataStorage.txt", Context.MODE_APPEND)
-            fos.write(str.toByteArray())
-            fos.write("\n". toByteArray())
-            fos.close()
-        } catch (ex:Exception){
-            print(ex.message)}
-            */
-    }
-
-    private fun pickColor(){
-        val fin = File("dataStorage.txt", FILENAME)
-        val sc = Scanner(fin)
-        var r:Int = -1
-        var g:Int = -1
-        var b:Int = -1
-        var cName = "unnamed"
-        var line = ""
-       // namedColors.clear()
-        while (sc.hasNextInt()){
-            r = sc.nextInt()
-            if (sc.hasNextInt()){
-                g = sc.nextInt()
-            }
-            if (sc.hasNextInt()){
-                b = sc.nextInt()
-            }
-        }
-
-
-
-    }
-
-    fun readValues(){
-        try {
-            val fos = openFileInput("dataStorage.txt")
-            val bufferedReader = fos.bufferedReader()
-            val line: String = bufferedReader.readLine()
-            Toast.makeText(applicationContext, line,
+        simpleAlert.setButton(AlertDialog.BUTTON_POSITIVE, "Save", {
+            dialogInterface, i ->
+            var result = colorName.text.toString()
+            val line = "${colors[0]} ${colors[1]} ${colors[2]} $result\n"
+            fOut.append(line)
+            fOut.close()
+            println(result)
+            Toast.makeText(applicationContext, "Saved to internal Storage",
                     Toast.LENGTH_SHORT).show()
-        }
-        catch (ex:Exception){
+        })
+
+        simpleAlert.show()
+    }
+
+    private fun showColorList() {
+        readValues()
+        selector("Saved Colors",namedColors, {dialogInterface, i ->
+            pickColor(i)
+            var name = namedColors[i].split( " ")
+            toast("Your color is ${name[3]}!") })
+    }
+
+
+    private fun pickColor(i: Int) {
+        val choosen = namedColors[i].split(" ")
+        var r:Int = choosen[0].toInt()
+        var g:Int = choosen[1].toInt()
+        var b:Int = choosen[2].toInt()
+        colors[0] = r
+        colors[1] = g
+        colors[2] = b
+        redSeekBar.progress = r
+        greenSeekBar.progress = g
+        blueSeekBar.progress = b
+        seekBarProgress()
+    }
+
+    fun readValues() {
+        try {
+            val f = openFileInput("dataStorage.txt")
+            val br = f.bufferedReader()
+            namedColors.clear()
+            br.forEachLine {
+                namedColors.add(it)
+            }
+            f.close()
+        } catch (ex:Exception){
             print(ex.message)}
     }
 
@@ -131,16 +134,11 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
             R.id.save_color -> {
-                var str = (redProgress.text.toString() + ", " + greenProgress.text.toString()
-                        + ", "+ blueProgress.text.toString())
-                //writeValues(str)
-                Toast.makeText(applicationContext,
-                        "Data written to internal storage",
-                        Toast.LENGTH_SHORT).show()
+                saveAlertbox()
 
                 return true}
             R.id.recall_color ->{
-                //displayAlert()
+                showColorList()
                 return true}
             else -> super.onOptionsItemSelected(item)
         }
