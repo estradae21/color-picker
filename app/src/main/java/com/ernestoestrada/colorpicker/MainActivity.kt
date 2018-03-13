@@ -2,6 +2,7 @@ package com.ernestoestrada.colorpicker
 
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -10,8 +11,8 @@ import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.*
-import com.ernestoestrada.colorpicker.R.mipmap.ic_launcher
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.selector
@@ -24,10 +25,37 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
     var namedColors  = arrayListOf<CharSequence>()
     var colors:IntArray = intArrayOf(0,0,0)
+    var color1: IntArray = intArrayOf(0,0,0)
+    var color2: IntArray = intArrayOf(0,0,0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val info = intent.extras
+        if (info != null) {
+
+            Color1.visibility = View.VISIBLE
+            Color2.visibility = View.VISIBLE
+            returnColor.visibility = View.VISIBLE
+
+            Color1.setOnClickListener {
+                color1[0] = colors[0]
+                color1[1] = colors[1]
+                color1[2] = colors[2]
+                Log.i("Color 1", "${color1[0]}, ${color1[1]}, ${color1[2]}")
+            }
+
+            Color2.setOnClickListener{
+                color2[0] = colors[0]
+                color2[1] = colors[1]
+                color2[2] = colors[2]
+                Log.i("Color 2", "${color2[0]}, ${color2[1]}, ${color2[2]}")
+            }
+            returnColor.setOnClickListener {
+                finish()
+            }
+        }
 
         var actionBar = getSupportActionBar()
         actionBar!!.setDisplayShowHomeEnabled(true)
@@ -37,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         setupSeekBarListener(redSeekBar, 0)
         setupSeekBarListener(greenSeekBar, 1)
         setupSeekBarListener(blueSeekBar,2)
+
 
     }
 
@@ -142,6 +171,16 @@ class MainActivity : AppCompatActivity() {
                 return true}
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    override fun finish() {
+        val data = Intent()
+        data.putExtra("color_1", "${color1[0]} ${color1[1]} ${color1[2]} ")
+        data.putExtra("color_2","${color2[0]} ${color2[1]} ${color2[2]}")
+        setResult(RESULT_OK, data)
+        Log.i("Color 1", "${color1[0]}, ${color1[1]}, ${color1[2]}")
+        Log.i("Color 2", "${color2[0]}, ${color2[1]}, ${color2[2]}")
+        super.finish()
     }
 }
 
